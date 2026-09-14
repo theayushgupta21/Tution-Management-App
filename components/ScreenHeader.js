@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import theme from '../constants/theme';
 
-export default function ScreenHeader({ title, subtitle, rightAction, style }) {
+export default function ScreenHeader({ title, subtitle, rightAction, style = undefined }) {
   return (
     <View style={[styles.header, style]}>
       <View style={styles.textWrap}>
@@ -27,13 +27,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 30,
     fontWeight: '800',
-    letterSpacing: -0.8,
+    letterSpacing: -1,
     color: theme.colors.textPrimary,
   },
   subtitle: {
     marginTop: 4,
-    fontSize: 14,
+    fontSize: 13,
     color: theme.colors.textSecondary,
-    fontWeight: '500',
+    fontWeight: '700',
   },
 });

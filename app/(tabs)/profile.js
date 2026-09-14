@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
@@ -10,6 +11,7 @@ import { auth, db } from "../../config/firebaseConfig";
 import theme from "../../constants/theme";
 
 export default function ProfileScreen() {
+  const router = useRouter();
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -51,9 +53,16 @@ export default function ProfileScreen() {
         style: "destructive",
         onPress: async () => {
           try {
+            if (!auth) {
+              router.replace("/login");
+              return;
+            }
+
             await signOut(auth);
+            router.replace("/login");
           } catch (error) {
-            Alert.alert("Logout Error", error.message || "Could not sign out.");
+            const message = error instanceof Error ? error.message : "Could not sign out.";
+            Alert.alert("Logout Error", message);
           }
         },
       },

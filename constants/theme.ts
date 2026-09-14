@@ -1,42 +1,33 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
-
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+const tintColorLight = '#E77A42';
+const tintColorDark = '#FFF7F0';
 
 export const Colors = {
   light: {
-    text: '#11181C',
-    background: '#fff',
+    text: '#2A1F1B',
+    background: '#FFF8ED',
     tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
+    icon: '#7E665C',
+    tabIconDefault: '#9B867D',
     tabIconSelected: tintColorLight,
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
+    text: '#F7F1EB',
+    background: '#1F1715',
     tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
+    icon: '#E5D6C9',
+    tabIconDefault: '#C7B3A7',
     tabIconSelected: tintColorDark,
   },
 };
 
 export const Fonts = Platform.select({
   ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
+    sans: 'System',
+    serif: 'Georgia',
+    rounded: 'SF Pro Rounded',
+    mono: 'SFMono-Regular',
   },
   default: {
     sans: 'normal',
@@ -45,92 +36,132 @@ export const Fonts = Platform.select({
     mono: 'monospace',
   },
   web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+    sans: "'Poppins', 'Nunito', 'Segoe UI', sans-serif",
+    serif: "'Georgia', serif",
+    rounded: "'Nunito', 'Poppins', 'Segoe UI', sans-serif",
+    mono: "'SFMono-Regular', 'Consolas', monospace",
   },
 });
 
 export const theme = {
   colors: {
-    primary: '#8B5E3C',
-    primarySoft: '#F4E3D2',
-    secondary: '#E8A33D',
-    secondarySoft: '#FDF0D8',
+    primary: '#E77A42',
+    primaryStrong: '#D66329',
+    primarySoft: '#FDE7DB',
+    secondary: '#6DB0A5',
+    secondarySoft: '#E4F5F0',
+    tertiary: '#F5BF5E',
+    tertiarySoft: '#FFF2CC',
+    info: '#8EB9E8',
+    infoSoft: '#EAF3FF',
+    success: '#73A86C',
+    successSoft: '#EAF5E8',
+    warning: '#E8B15A',
+    warningSoft: '#FFF2D9',
+    danger: '#D96B5B',
+    dangerSoft: '#FDE5E0',
     background: '#FFF8ED',
+    backgroundAlt: '#F9F3EA',
     neutral: '#FFF8ED',
     card: '#FFFFFF',
-    darkAccent: '#3E2723',
-    success: '#6B8E4E',
-    successSoft: '#E7F0DD',
-    danger: '#C1440E',
-    dangerSoft: '#FCE1D3',
-    textPrimary: '#3E2723',
-    textSecondary: '#8D6E63',
-    border: '#EADCCB',
+    cardMuted: '#F7F1EA',
+    darkAccent: '#2F221F',
+    textPrimary: '#2F221F',
+    textSecondary: '#7B655D',
+    textMuted: '#A48D7F',
+    border: '#F0E2D7',
+    borderStrong: '#E4C9B3',
     white: '#FFFFFF',
-    shadow: '#3E2723',
+    shadow: '#2F221F',
+    overlay: 'rgba(47, 34, 31, 0.12)',
   },
   spacing: {
-    xs: 4,
+    xxs: 4,
+    xs: 6,
     sm: 8,
     md: 12,
     lg: 16,
     xl: 20,
     xxl: 24,
     xxxl: 28,
+    huge: 36,
   },
   radii: {
-    sm: 10,
+    xs: 8,
+    sm: 12,
     md: 16,
     lg: 20,
-    xl: 28,
+    xl: 24,
+    xxl: 28,
     full: 999,
   },
   shadows: {
     card: {
-      shadowColor: '#0f172a',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.06,
-      shadowRadius: 8,
-      elevation: 2,
+      shadowColor: '#2F221F',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.08,
+      shadowRadius: 10,
+      elevation: 3,
     },
     soft: {
-      shadowColor: '#0f172a',
-      shadowOffset: { width: 0, height: 6 },
-      shadowOpacity: 0.08,
-      shadowRadius: 14,
-      elevation: 3,
+      shadowColor: '#2F221F',
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.10,
+      shadowRadius: 18,
+      elevation: 4,
+    },
+    strong: {
+      shadowColor: '#2F221F',
+      shadowOffset: { width: 0, height: 12 },
+      shadowOpacity: 0.12,
+      shadowRadius: 24,
+      elevation: 7,
     },
   },
   typography: {
+    display: {
+      fontSize: 32,
+      fontWeight: '800',
+      letterSpacing: -1,
+      color: '#2F221F',
+    },
     headline: {
-      fontSize: 30,
+      fontSize: 28,
       fontWeight: '800',
       letterSpacing: -0.8,
-      color: '#1a1a1a',
+      color: '#2F221F',
     },
     title: {
-      fontSize: 24,
+      fontSize: 22,
       fontWeight: '800',
       letterSpacing: -0.5,
-      color: '#1a1a1a',
+      color: '#2F221F',
     },
     subtitle: {
       fontSize: 15,
-      fontWeight: '500',
-      color: '#6b7280',
+      fontWeight: '700',
+      color: '#7B655D',
     },
     body: {
       fontSize: 14,
-      fontWeight: '500',
-      color: '#1a1a1a',
+      fontWeight: '600',
+      color: '#2F221F',
+    },
+    bodyStrong: {
+      fontSize: 15,
+      fontWeight: '700',
+      color: '#2F221F',
     },
     caption: {
       fontSize: 12,
-      fontWeight: '600',
-      color: '#6b7280',
+      fontWeight: '700',
+      color: '#7B655D',
+    },
+    small: {
+      fontSize: 11,
+      fontWeight: '700',
+      letterSpacing: 0.2,
+      color: '#7B655D',
     },
   },
 };

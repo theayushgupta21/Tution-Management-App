@@ -33,20 +33,22 @@ export default function PrimaryButton({ title, onPress, disabled, style, textSty
 
 const styles = StyleSheet.create({
   wrapper: {
-    borderRadius: 18,
+    borderRadius: theme.radii.xl,
   },
   button: {
     backgroundColor: theme.colors.primary,
-    borderRadius: 18,
+    borderRadius: theme.radii.xl,
     paddingVertical: 16,
+    paddingHorizontal: 20,
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 56,
+    ...theme.shadows.soft,
   },
   text: {
     color: theme.colors.white,
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '800',
     letterSpacing: 0.2,
   },
 });

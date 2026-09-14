@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tuition Progress</title>
+    <style>
+      :root {
+        --bg: #fff8ed;
+        --card: #ffffff;
+        --primary: #8b5e3c;
+        --dark: #3e2723;
+        --muted: #8d6e63;
+        --border: #eadccb;
+        --success: #6b8e4e;
+        --danger: #c1440e;
+        --warning: #f4e3d2;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: linear-gradient(180deg, #fff8ed 0%, #f6efe8 100%);
+        color: var(--dark);
+      }
+
+      .container {
+        max-width: 460px;
+        margin: 0 auto;
+        padding: 20px 16px 48px;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 20px 18px;
+        box-shadow: 0 8px 20px rgba(62, 39, 35, 0.06);
+      }
+
+      .hero {
+        text-align: center;
+        margin-bottom: 18px;
+      }
+
+      .brand {
+        font-weight: 800;
+        letter-spacing: 0.03em;
+        color: var(--primary);
+        margin-bottom: 8px;
+      }
+
+      .title {
+        font-size: clamp(1.7rem, 5vw, 2.3rem);
+        font-weight: 700;
+        margin: 0;
+      }
+
+      .subtitle {
+        color: var(--muted);
+        margin: 8px 0 0;
+        font-size: 0.98rem;
+      }
+
+      .meta-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .stat {
+        background: var(--warning);
+        border-radius: 14px;
+        padding: 12px 14px;
+        flex: 1;
+      }
+
+      .label {
+        display: block;
+        color: var(--muted);
+        font-size: 0.74rem;
+        margin-bottom: 6px;
+      }
+
+      .value {
+        font-size: 1.2rem;
+        font-weight: 700;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-weight: 700;
+        font-size: 0.82rem;
+      }
+
+      .badge.paid {
+        background: rgba(107, 142, 78, 0.12);
+        color: var(--success);
+      }
+
+      .badge.pending {
+        background: rgba(193, 68, 14, 0.1);
+        color: var(--danger);
+      }
+
+      .progress-wrap {
+        margin-top: 20px;
+      }
+
+      .progress-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        font-weight: 700;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 14px;
+        border-radius: 999px;
+        background: #f0e1d1;
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary), #dca55d);
+        border-radius: 999px;
+      }
+
+      .records {
+        list-style: none;
+        margin: 18px 0 0;
+        padding: 0;
+        border-top: 1px solid var(--border);
+      }
+
+      .records li {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .records .date {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .records .status {
+        font-weight: 700;
+      }
+
+      .records .status.present {
+        color: var(--success);
+      }
+
+      .records .status.absent {
+        color: var(--danger);
+      }
+
+      .error {
+        background: #fff1ef;
+        color: #8a2c2c;
+        border: 1px solid #f2c2b6;
+        border-radius: 16px;
+        padding: 16px;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 24px 0;
+        color: var(--muted);
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="container">
+      <div id="app"></div>
+    </main>
+
+    <script>
+      const app = document.getElementById('app');
+
+      const formatDate = (value) => {
+        if (!value) return '—';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return value;
+        return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+      };
+
+      const renderLoading = () => {
+        app.innerHTML = '<div class="loading">Loading student details...</div>';
+      };
+
+      const renderError = (message) => {
+        app.innerHTML = `
+          <div class="card error">
+            <strong>Link expired or invalid</strong>
+            <p class="muted">${message || 'This link is no longer active or does not exist.'}</p>
+          </div>
+        `;
+      };
+
+      const renderPage = (payload) => {
+        const { student, attendance, lastUpdated } = payload;
+        const percentage = attendance?.percentage ?? 0;
+        const feeStatusClass = student.feeStatus === 'paid' ? 'paid' : 'pending';
+
+        app.innerHTML = `
+          <div class="hero">
+            <div class="brand">TuitionApp</div>
+            <h1 class="title">${student.name}</h1>
+            <p class="subtitle">${student.className || 'Student profile'}</p>
+          </div>
+
+          <div class="card">
+            <div class="meta-row">
+              <div class="stat">
+                <span class="label">Fee Status</span>
+                <span class="badge ${feeStatusClass}">${student.feeStatus === 'paid' ? 'Paid' : 'Pending'}</span>
+              </div>
+              <div class="stat">
+                <span class="label">Last Updated</span>
+                <span class="value">${formatDate(lastUpdated)}</span>
+              </div>
+            </div>
+
+            <div class="progress-wrap">
+              <div class="progress-header">
+                <span>Attendance</span>
+                <span>${percentage}%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width:${percentage}%"></div>
+              </div>
+            </div>
+
+            <div class="meta-row">
+              <div class="stat">
+                <span class="label">Present</span>
+                <span class="value">${attendance.presentCount || 0}</span>
+              </div>
+              <div class="stat">
+                <span class="label">Marked</span>
+                <span class="value">${attendance.totalMarked || 0}</span>
+              </div>
+            </div>
+
+            <h3 style="margin:20px 0 10px; font-size:1rem;">Recent attendance</h3>
+            ${(!attendance.records || attendance.records.length === 0)
+              ? '<p class="muted">No attendance data available yet.</p>'
+              : '<ul class="records">' + attendance.records.map((item) => `
+                    <li>
+                      <span class="date">${formatDate(item.date)}</span>
+                      <span class="status ${item.status.toLowerCase()}">${item.status}</span>
+                    </li>`).join('') + '</ul>'}
+          </div>
+        `;
+      };
+
+      const init = async () => {
+        renderLoading();
+
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+
+        if (!token) {
+          renderError('No token was found in this link.');
+          return;
+        }
+
+        const functionUrl = `https://us-central1-<your-project-id>.cloudfunctions.net/getParentView?token=${encodeURIComponent(token)}`;
+
+        try {
+          const response = await fetch(functionUrl, { method: 'GET' });
+          const data = await response.json();
+
+          if (!response.ok || !data || !data.student) {
+            renderError(data?.message || 'This parent link is invalid or expired.');
+            return;
+          }
+
+          renderPage(data);
+        } catch (error) {
+          renderError('The parent data could not be loaded right now.');
+        }
+      };
+
+      init();
+    </script>
+  </body>
+</html>

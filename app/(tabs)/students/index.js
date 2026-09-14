@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
+import * as Crypto from "expo-crypto";
 import { useRouter } from "expo-router";
-import { onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot, updateDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { Alert, FlatList, Linking, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Avatar from "../../../components/Avatar";
@@ -9,6 +10,39 @@ import ScreenHeader from "../../../components/ScreenHeader";
 import { auth, db, getUserStudentsCollection } from "../../../config/firebaseConfig";
 import theme from "../../../constants/theme";
 import { getMonthlyAttendanceSummary } from "../../../utils/attendanceHelpers";
+
+const generateShareToken = async () => {
+  if (typeof Crypto?.randomUUID === "function") {
+    return Crypto.randomUUID();
+  }
+
+  return `token_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
+};
+
+const getParentShareBaseUrl = () => {
+  const stored = process.env.EXPO_PUBLIC_PARENT_VIEW_BASE_URL || "https://your-firebase-hosting-domain";
+  return stored.replace(/\/$/, "");
+};
+
+const ensureStudentShareToken = async (student) => {
+  if (student?.shareToken) {
+    return student.shareToken;
+  }
+
+  const nextToken = await generateShareToken();
+  const studentDoc = doc(db, "users", auth?.currentUser?.uid, "students", student.id);
+
+  try {
+    await updateDoc(studentDoc, {
+      shareToken: nextToken,
+      updatedAt: new Date().toISOString(),
+    });
+    return nextToken;
+  } catch (error) {
+    console.warn("Could not update share token:", error);
+    return nextToken;
+  }
+};
 
 export default function StudentListScreen() {
   const router = useRouter();
@@ -61,23 +95,22 @@ export default function StudentListScreen() {
     }
   };
 
-  const shareParentLink = (student) => {
+  const shareParentLink = async (student) => {
     const phone = (student.parentPhone || "").replace(/[^\d]/g, "");
-    const userId = student.ownerId || auth?.currentUser?.uid;
-    const publicUrl = userId
-      ? `https://your-domain.com/student-view/${student.id}?userId=${userId}`
-      : `https://your-domain.com/student-view/${student.id}`;
-
     if (!phone) {
       Alert.alert("Missing number", "Add parent phone number for this student first.");
       return;
     }
 
-    const message = `Hi! ${student.name} ki current month attendance aur fee status dekhne ke liye: ${publicUrl}`;
-    const url = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(message)}`;
-    Linking.openURL(url).catch(() => {
-      Alert.alert("WhatsApp not found", "Install WhatsApp or share this URL manually.");
-    });
+    try {
+      const token = await ensureStudentShareToken(student);
+      const publicUrl = `${getParentShareBaseUrl()}/parent.html?token=${encodeURIComponent(token)}`;
+      const message = `Hi! ${student.name} ki attendance aur fee status dekhne ke liye yeh link open karein:\n\n${publicUrl}`;
+      const url = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(message)}`;
+      await Linking.openURL(url);
+    } catch (error) {
+      Alert.alert("Share error", error.message || "Could not open WhatsApp share flow.");
+    }
   };
 
   return (

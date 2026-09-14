@@ -91,7 +91,7 @@ export default function DashboardScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <ScreenHeader
         title="Dashboard"
-        subtitle="Overview"
+        subtitle="Your center at a glance"
         rightAction={
           <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
             <Text style={styles.logoutText}>Logout</Text>
@@ -99,14 +99,21 @@ export default function DashboardScreen() {
         }
       />
 
-      <Card style={styles.greetingCard}>
-        <View style={styles.greetingRow}>
+      <Card style={styles.heroCard}>
+        <View style={styles.heroRow}>
           <TouchableOpacity onPress={() => router.push("/profile")} activeOpacity={0.8}>
-            <Avatar name={profile.name || "Teacher"} size={56} />
+            <Avatar
+              name={profile.name || "Teacher"}
+              size={58}
+              backgroundColor={theme.colors.secondarySoft}
+              textColor={theme.colors.primaryStrong}
+            />
           </TouchableOpacity>
-          <View style={styles.greetingTextWrap}>
-            <Text style={styles.greetingTitle}>Hello, {displayName} 👋</Text>
-            <Text style={styles.greetingSubtitle}>{profile.subject || "All Subjects"}</Text>
+
+          <View style={styles.heroTextWrap}>
+            <Text style={styles.heroEyebrow}>Welcome back</Text>
+            <Text style={styles.heroTitle}>Hello, {displayName} 👋</Text>
+            <Text style={styles.heroSubtitle}>{profile.subject || "All Subjects"}</Text>
           </View>
         </View>
       </Card>
@@ -114,91 +121,175 @@ export default function DashboardScreen() {
       <View style={styles.cardRow}>
         <Card style={styles.metricCard}>
           <View style={styles.metricTop}>
-            <View style={styles.metricIconPrimary}><Ionicons name="people" size={18} color="#fff" /></View>
+            <View style={styles.metricIconPrimary}>
+              <Ionicons name="people" size={18} color="#fff" />
+            </View>
             <Text style={styles.metricValue}>{totalStudents}</Text>
           </View>
-          <Text style={styles.cardLabel}>Total Students</Text>
+          <Text style={styles.cardLabel}>Students</Text>
         </Card>
 
         <Card style={[styles.metricCard, styles.metricCardDanger]}>
           <View style={styles.metricTop}>
-            <View style={styles.metricIconDanger}><Ionicons name="cash" size={18} color="#fff" /></View>
+            <View style={styles.metricIconDanger}>
+              <Ionicons name="cash" size={18} color="#fff" />
+            </View>
             <Text style={[styles.metricValue, { color: theme.colors.danger }]}>{pendingFees}</Text>
           </View>
-          <Text style={styles.cardLabel}>Fees Pending</Text>
+          <Text style={styles.cardLabel}>Pending fees</Text>
         </Card>
+      </View>
+
+      <View style={styles.sectionHeaderRow}>
+        <Text style={styles.sectionTitle}>Quick actions</Text>
       </View>
 
       <TouchableOpacity style={styles.navButton} onPress={() => router.push("/students")}>
         <View style={styles.navButtonInner}>
-          <View style={styles.navIconWrap}><Ionicons name="people" size={18} color={theme.colors.primary} /></View>
-          <Text style={styles.navButtonText}>Manage Students</Text>
+          <View style={styles.navIconWrapPrimary}>
+            <Ionicons name="people" size={18} color={theme.colors.primary} />
+          </View>
+          <View style={styles.navTextWrap}>
+            <Text style={styles.navButtonText}>Manage students</Text>
+            <Text style={styles.navButtonMeta}>Add, update, and review learning progress</Text>
+          </View>
         </View>
         <Ionicons name="chevron-forward" size={20} color={theme.colors.primary} />
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.navButton} onPress={() => router.push("/attendance")}>
         <View style={styles.navButtonInner}>
-          <View style={styles.navIconWrap}><Ionicons name="calendar" size={18} color={theme.colors.primary} /></View>
-          <Text style={styles.navButtonText}>Mark Attendance</Text>
+          <View style={styles.navIconWrapSecondary}>
+            <Ionicons name="calendar" size={18} color={theme.colors.secondary} />
+          </View>
+          <View style={styles.navTextWrap}>
+            <Text style={styles.navButtonText}>Attendance</Text>
+            <Text style={styles.navButtonMeta}>Track class-by-class presence</Text>
+          </View>
         </View>
-        <Ionicons name="chevron-forward" size={20} color={theme.colors.primary} />
+        <Ionicons name="chevron-forward" size={20} color={theme.colors.secondary} />
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.navButton} onPress={() => router.push("/fees")}>
         <View style={styles.navButtonInner}>
-          <View style={styles.navIconWrap}><Ionicons name="wallet" size={18} color={theme.colors.primary} /></View>
-          <Text style={styles.navButtonText}>Fee Status</Text>
+          <View style={styles.navIconWrapWarning}>
+            <Ionicons name="wallet" size={18} color={theme.colors.warning} />
+          </View>
+          <View style={styles.navTextWrap}>
+            <Text style={styles.navButtonText}>Fee status</Text>
+            <Text style={styles.navButtonMeta}>Review reminders and payment updates</Text>
+          </View>
         </View>
-        <Ionicons name="chevron-forward" size={20} color={theme.colors.primary} />
+        <Ionicons name="chevron-forward" size={20} color={theme.colors.warning} />
       </TouchableOpacity>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.colors.neutral },
+  container: { flex: 1, backgroundColor: theme.colors.background },
   content: { padding: 20, paddingBottom: 32 },
-  logoutButton: { paddingHorizontal: 10, paddingVertical: 8, borderRadius: 10, backgroundColor: "#fee2e2" },
-  logoutText: { color: theme.colors.danger, fontWeight: "700" },
-  greetingCard: {
-    borderRadius: 20,
+  logoutButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    backgroundColor: theme.colors.dangerSoft,
+    borderWidth: 1,
+    borderColor: '#F7DCD2',
+  },
+  logoutText: { color: theme.colors.danger, fontWeight: "800" },
+  heroCard: {
+    borderRadius: 28,
     marginBottom: 20,
     padding: 18,
     backgroundColor: theme.colors.secondarySoft,
+    borderColor: '#DDEEE8',
   },
-  greetingRow: { flexDirection: "row", alignItems: "center" },
-  greetingTextWrap: { flex: 1, marginLeft: 12 },
-  greetingTitle: { fontSize: 22, fontWeight: "800", color: theme.colors.textPrimary },
-  greetingSubtitle: { fontSize: 13, color: theme.colors.textSecondary, marginTop: 4 },
-  cardRow: { flexDirection: "row", gap: 12, marginBottom: 18 },
-  metricCard: { flex: 1, backgroundColor: theme.colors.primarySoft, borderRadius: 18, padding: 16 },
-  metricCardDanger: { backgroundColor: theme.colors.dangerSoft },
-  metricTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 },
-  metricIconPrimary: { width: 36, height: 36, borderRadius: 18, backgroundColor: theme.colors.primary, justifyContent: "center", alignItems: "center" },
-  metricIconDanger: { width: 36, height: 36, borderRadius: 18, backgroundColor: theme.colors.danger, justifyContent: "center", alignItems: "center" },
-  metricValue: { fontSize: 30, fontWeight: "800", color: theme.colors.primary },
-  cardLabel: { fontSize: 13, color: theme.colors.textSecondary, fontWeight: "600" },
+  heroRow: { flexDirection: "row", alignItems: "center" },
+  heroTextWrap: { flex: 1, marginLeft: 12 },
+  heroEyebrow: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: theme.colors.textSecondary,
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+    marginBottom: 4,
+  },
+  heroTitle: { fontSize: 26, fontWeight: "800", color: theme.colors.textPrimary, letterSpacing: -0.6 },
+  heroSubtitle: { fontSize: 13, color: theme.colors.textSecondary, marginTop: 4, fontWeight: "700" },
+  cardRow: { flexDirection: "row", marginBottom: 20 },
+  metricCard: {
+    flex: 1,
+    padding: 16,
+    borderRadius: 22,
+    backgroundColor: theme.colors.primarySoft,
+    borderColor: '#F2D6BF',
+    marginRight: 12,
+  },
+  metricCardDanger: { backgroundColor: theme.colors.dangerSoft, borderColor: '#F3D2C7', marginRight: 0 },
+  metricTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 },
+  metricIconPrimary: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: theme.colors.primary,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  metricIconDanger: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: theme.colors.danger,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  metricValue: { fontSize: 32, fontWeight: "800", color: theme.colors.primary },
+  cardLabel: { fontSize: 12, color: theme.colors.textSecondary, fontWeight: "800", textTransform: "uppercase", letterSpacing: 0.8 },
+  sectionHeaderRow: { marginBottom: 12 },
+  sectionTitle: { fontSize: 16, fontWeight: "800", color: theme.colors.textPrimary },
   navButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     backgroundColor: theme.colors.card,
-    borderRadius: 18,
+    borderRadius: 22,
     paddingHorizontal: 16,
     paddingVertical: 16,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
     ...theme.shadows.card,
   },
-  navButtonInner: { flexDirection: "row", alignItems: "center" },
-  navIconWrap: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
+  navButtonInner: { flexDirection: "row", alignItems: "center", flex: 1 },
+  navTextWrap: { flex: 1, marginRight: 10 },
+  navIconWrapPrimary: {
+    width: 38,
+    height: 38,
+    borderRadius: 14,
     backgroundColor: theme.colors.primarySoft,
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 10,
+    marginRight: 12,
   },
-  navButtonText: { fontSize: 16, fontWeight: "700", color: theme.colors.textPrimary },
+  navIconWrapSecondary: {
+    width: 38,
+    height: 38,
+    borderRadius: 14,
+    backgroundColor: theme.colors.secondarySoft,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  navIconWrapWarning: {
+    width: 38,
+    height: 38,
+    borderRadius: 14,
+    backgroundColor: theme.colors.warningSoft,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  navButtonText: { fontSize: 16, fontWeight: "800", color: theme.colors.textPrimary },
+  navButtonMeta: { fontSize: 12, color: theme.colors.textSecondary, marginTop: 2, fontWeight: "600" },
 });

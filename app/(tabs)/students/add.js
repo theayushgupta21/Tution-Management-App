@@ -1,9 +1,18 @@
+import * as Crypto from "expo-crypto";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { addDoc, deleteDoc, doc, getDoc, updateDoc } from "firebase/firestore";
 import { useState } from "react";
 import { Alert, Linking, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity } from "react-native";
 import { auth, db, getUserStudentsCollection } from "../../../config/firebaseConfig";
 import { getMonthlyAttendanceSummary } from "../../../utils/attendanceHelpers";
+
+const generateShareToken = async () => {
+  if (typeof Crypto?.randomUUID === "function") {
+    return Crypto.randomUUID();
+  }
+
+  return `token_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
+};
 
 const getStudentDocRef = async (studentId) => {
   const userId = auth?.currentUser?.uid;
@@ -43,6 +52,7 @@ export default function AddStudentScreen() {
     }
 
     const userId = auth?.currentUser?.uid;
+    const nextShareToken = isEditing ? String(params.shareToken || "") || await generateShareToken() : await generateShareToken();
     const studentData = {
       name,
       className,
@@ -50,6 +60,8 @@ export default function AddStudentScreen() {
       feeAmount: Number(feeAmount),
       feeStatus: params.feeStatus || "pending",
       ownerId: userId || params.ownerId || "",
+      shareToken: nextShareToken,
+      updatedAt: new Date().toISOString(),
     };
 
     try {

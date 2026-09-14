@@ -42,22 +42,25 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    // Navigation fully ready hone tak wait karo, warna redirect silently fail hoga.
-    // Important: agar user pehle se logged in hota hai, toh AsyncStorage persistence
-    // ki wajah se Firebase auth session remember rehta hai, isliye onAuthStateChanged
-    // ke through user immediately available ho jayega. Yeh normal behavior hai, bug nahi.
-    if (!navigationState?.key) return;
-    if (checkingAuth) return;
+    // Navigation ready hone ke baad hi redirect karo, warna Expo Router early startup
+    // ke dauran state update warning deta hai.
+    if (!navigationState?.key || checkingAuth) return;
 
-    const isPublicRoute = segments[0] === 'student-view';
-    const inTabsGroup = segments[0] === '(tabs)';
+    const currentSegment = segments[0];
+    const isPublicRoute = currentSegment === 'student-view';
+    const isLoginRoute = currentSegment === 'login';
 
-    if (!isPublicRoute && !user && inTabsGroup) {
-      router.replace('/login');
-    } else if (!isPublicRoute && user && !inTabsGroup) {
+    if (!user) {
+      if (!isPublicRoute && !isLoginRoute) {
+        router.replace('/login');
+      }
+      return;
+    }
+
+    if (isLoginRoute || isPublicRoute) {
       router.replace('/(tabs)');
     }
-  }, [user, checkingAuth, segments, navigationState?.key]);
+  }, [user, checkingAuth, segments, navigationState?.key, router]);
 
   if (checkingAuth) {
     return (

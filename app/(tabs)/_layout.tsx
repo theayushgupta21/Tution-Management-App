@@ -7,10 +7,10 @@ function TabIcon({ name, color, active }: { name: keyof typeof Ionicons.glyphMap
   return (
     <View
       style={{
-        width: 46,
+        width: 44,
         height: 34,
-        borderRadius: 18,
-        backgroundColor: active ? "rgba(232, 163, 61, 0.20)" : "transparent",
+        borderRadius: 16,
+        backgroundColor: active ? theme.colors.primarySoft : "transparent",
         justifyContent: "center",
         alignItems: "center",
       }}
@@ -26,14 +26,16 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: "#FFF8ED",
+          backgroundColor: "rgba(255, 248, 237, 0.96)",
           borderTopWidth: 0,
-          borderRadius: 26,
+          borderRadius: 28,
           marginHorizontal: 18,
           marginBottom: 12,
           height: 78,
           paddingTop: 8,
           paddingBottom: 10,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
           shadowColor: theme.colors.shadow,
           shadowOffset: { width: 0, height: 8 },
           shadowOpacity: 0.10,
@@ -41,7 +43,7 @@ export default function TabsLayout() {
           elevation: 6,
         },
         tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: "#B0A399",
+        tabBarInactiveTintColor: "#A19186",
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: "800",
@@ -50,6 +52,7 @@ export default function TabsLayout() {
         },
       }}
     >
+      {/* 1. Home */}
       <Tabs.Screen
         name="index"
         options={{
@@ -57,6 +60,8 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, focused }) => <TabIcon name="home" color={String(color)} active={focused} />,
         }}
       />
+
+      {/* 2. Calendar */}
       <Tabs.Screen
         name="attendance"
         options={{
@@ -64,6 +69,8 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, focused }) => <TabIcon name="calendar" color={String(color)} active={focused} />,
         }}
       />
+
+      {/* 3. Students (all enrolled) */}
       <Tabs.Screen
         name="students"
         options={{
@@ -71,6 +78,8 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, focused }) => <TabIcon name="people" color={String(color)} active={focused} />,
         }}
       />
+
+      {/* 4. Profile */}
       <Tabs.Screen
         name="profile"
         options={{
@@ -78,6 +87,9 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, focused }) => <TabIcon name="person" color={String(color)} active={focused} />,
         }}
       />
+
+      {/* Hidden from tab bar — still accessible via router.push() */}
+      <Tabs.Screen name="fees" options={{ href: null }} />
     </Tabs>
   );
 }

@@ -1,38 +1,56 @@
 # TuitionApp
 
-A React Native + Expo app for managing a tuition center with attendance, fee tracking, student records, and WhatsApp communication.
+<p align="center">
+  <img src="https://img.shields.io/badge/Expo-57-000020?style=for-the-badge&logo=expo" alt="Expo" />
+  <img src="https://img.shields.io/badge/React%20Native-0.86-61DAFB?style=for-the-badge&logo=react" alt="React Native" />
+  <img src="https://img.shields.io/badge/Firebase-Auth%20%2B%20Firestore-FFCA28?style=for-the-badge&logo=firebase" alt="Firebase" />
+</p>
 
-## What this app does
-- Teacher/admin login and signup with Firebase Authentication
-- Add, edit, and delete student records
-- Mark attendance per student
-- Track fee status (paid/pending)
-- Send WhatsApp reminders for pending fees
-- View dashboard summary and student attendance history
-- Use a 4-tab bottom navigation: Home, Calendar, Students, Profile
+<p align="center">
+  <strong>Smart tuition management for teachers who want less paperwork and more focus on learning.</strong>
+</p>
 
-## Tech stack
+TuitionApp is a modern React Native + Expo app designed for coaching centers and tuition businesses. It brings together student records, attendance, fee tracking, and communication into one dashboard that is easy to use on the go.
+
+## ✨ What this app does
+
+- Teacher login and signup using Firebase Authentication
+- Secure user-specific Firestore data storage
+- Dashboard overview with quick metrics
+- Student management with add, edit, and delete flow
+- Attendance tracking by student and class date
+- Fee status tracking for pending and paid students
+- WhatsApp reminder links to reduce payment follow-up friction
+- Profile screen with logout and account details
+- Warm, friendly mobile-first UI tailored for a tutoring business
+
+## 🧩 Tech stack
+
+- Expo SDK 57
+- React Native 0.86.3
 - Expo Router
-- React Native
 - Firebase Auth
 - Firebase Firestore
+- AsyncStorage
 - Expo Vector Icons
-- AsyncStorage for Firebase auth persistence
+- TypeScript support
 
-## Current project structure
+## 🏗️ Project structure
+
 ```bash
 TuitionApp/
 ├── app/
 │   ├── (tabs)/
 │   │   ├── _layout.tsx
 │   │   ├── attendance.js
+│   │   ├── fees.js
 │   │   ├── index.tsx
 │   │   ├── profile.js
 │   │   └── students/
 │   │       ├── [id]/
 │   │       │   └── attendance-history.js
-│   │       ├── index.js
-│   │       └── add.js
+│   │       ├── add.js
+│   │       └── index.js
 │   ├── _layout.tsx
 │   ├── login.js
 │   └── student-view/
@@ -49,37 +67,36 @@ TuitionApp/
 │   └── firebaseConfig.js
 ├── constants/
 │   └── theme.ts
-├── utils/
-│   └── attendanceHelpers.js
+├── functions/
+│   └── index.js
+├── hosting/
+│   └── parent.html
+├── firestore.rules
 ├── app.json
 ├── expo-env.d.ts
 ├── eslint.config.js
 ├── package.json
 ├── tsconfig.json
 ├── README.md
+├── AGENTS.md
+├── CLAUDE.md
 └── assets/
     └── images/
 ```
 
-## Main app flow
-### Tabs
-The bottom navigation is limited to 4 items:
+## 🧭 App navigation
+
+The app currently uses a 4-tab bottom navigation:
 - Home
 - Calendar
 - Students
 - Profile
 
-### Internal screens
-These are normal routed screens, not bottom-tab entries:
-- Fee status screen
-- Add / edit student screen
-- Attendance history screen
-- Public student view screen
+Extra screens like fee tracking, add/edit student views, and attendance history are internal routes used by actions from the main app flow.
 
-These screens are opened from dashboard buttons or list actions, not from the tab bar.
+## 🔐 Firebase setup
 
-## Firebase setup
-Create a Firebase project and add the following environment variables at the root of the project in a `.env` file:
+Create a root-level `.env` file with your Firebase credentials:
 
 ```bash
 EXPO_PUBLIC_FIREBASE_API_KEY=your_api_key
@@ -94,34 +111,43 @@ Then enable:
 - Firebase Authentication → Email/Password
 - Firestore Database
 
-## Install and run
+## 🚀 Run locally
+
 ```bash
 npm install
 npx expo start -c
 ```
 
-Run the app in Expo Go or a simulator/emulator.
+Open the app in Expo Go, Android Studio, or an iOS simulator.
 
-## Features implemented
-- [x] Admin signup/login
-- [x] User-specific Firebase data scoping
-- [x] Dashboard summary cards
-- [x] Student add/edit/delete flow
-- [x] Daily attendance marking
-- [x] Attendance history calendar view
-- [x] Fee tracking and status switching
-- [x] WhatsApp reminder deep links
-- [x] Teacher profile page
-- [x] Warm coffee themed UI
+## ✅ Included features
 
-## Notes
-- This project is designed as an MVP for a tuition center workflow.
-- App logic is intentionally focused on real management tasks rather than a generic template.
-- Firestore security rules should be tightened before production deployment.
+- [x] Teacher login and signup
+- [x] Firebase auth persistence using AsyncStorage
+- [x] Dashboard overview cards
+- [x] Student add, edit, delete, and listing flow
+- [x] Attendance tracking and history
+- [x] Fee tracking with paid/pending status
+- [x] WhatsApp reminder links for follow-ups
+- [x] Teacher profile page with logout
+- [x] Warm coffee-inspired mobile UI
+- [x] Parent/public view support structure
 
-## Future improvements
-- Automatic monthly WhatsApp reports
-- Parent-facing reporting link with read-only access
-- More advanced attendance analytics
-- Better role-based access (admin vs teacher)
-- Production security rules and validation
+## 📝 Notes
+
+- This is an MVP for a tuition business workflow.
+- Data is isolated per user in Firestore using the logged-in UID.
+- The app is built for real usage, but it is still designed as a practical MVP before full production-grade security hardening.
+
+## 🌱 Future improvements
+
+- monthly WhatsApp report automation
+- secure parent share-token access flow
+- stronger Firestore rules and validation
+- better attendance analytics and trends
+- role-based multi-admin support
+- production deployment pipeline with Firebase Hosting and Cloud Functions
+
+<p align="center">
+  <sub>Built for coaching centers, tuition classes, and fast-moving student management workflows.</sub>
+</p>

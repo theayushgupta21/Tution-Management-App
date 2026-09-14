@@ -1,90 +1,127 @@
-# Tuition Manager — Attendance, Fees & WhatsApp Reminders
+# TuitionApp
 
-A React Native (Expo) app for small tuition/coaching centers to manage students,
-mark daily attendance, and send WhatsApp fee reminders to parents — replacing
-manual WhatsApp groups and Excel sheets.
+A React Native + Expo app for managing a tuition center with attendance, fee tracking, student records, and WhatsApp communication.
 
-## Problem it solves
-Small coaching centers currently track attendance and fee collection manually,
-leading to missed fee follow-ups (real revenue loss) and no organized record of
-student attendance. This app gives the tuition owner one simple dashboard for
-all three.
+## What this app does
+- Teacher/admin login and signup with Firebase Authentication
+- Add, edit, and delete student records
+- Mark attendance per student
+- Track fee status (paid/pending)
+- Send WhatsApp reminders for pending fees
+- View dashboard summary and student attendance history
+- Use a 4-tab bottom navigation: Home, Calendar, Students, Profile
 
-## Tech Stack
-- **Frontend:** React Native + Expo
-- **Navigation:** React Navigation (bottom tabs + native stack)
-- **Backend:** Firebase Firestore (database) + Firebase Auth (login)
-- **Parent communication:** WhatsApp deep link (`wa.me` / `whatsapp://send`)
+## Tech stack
+- Expo Router
+- React Native
+- Firebase Auth
+- Firebase Firestore
+- Expo Vector Icons
+- AsyncStorage for Firebase auth persistence
 
-## Setup Instructions
-
-### 1. Install dependencies
+## Current project structure
 ```bash
-npx create-expo-app TuitionApp
-cd TuitionApp
-# Copy all files from this project into the new folder, overwriting App.js
-
-npm install firebase
-npm install @react-navigation/native @react-navigation/native-stack @react-navigation/bottom-tabs
-npx expo install react-native-screens react-native-safe-area-context
-```
-
-### 2. Set up Firebase
-1. Go to [console.firebase.google.com](https://console.firebase.google.com) → Create Project (free tier is enough)
-2. Inside the project, click "Add app" → Web (</>) — yes, even though this is a mobile app, Firebase's web SDK works fine with Expo
-3. Copy the config object it gives you into `config/firebaseConfig.js`
-4. In the Firebase console:
-   - **Authentication** → Sign-in method → Enable "Email/Password"
-   - **Firestore Database** → Create database → Start in **test mode** (switch to secure rules before going live — see note below)
-
-### 3. Run the app
-```bash
-npx expo start
-```
-Scan the QR code with the Expo Go app on your phone (Android/iOS), or press `a` for Android emulator / `i` for iOS simulator.
-
-## Project Structure
-```
 TuitionApp/
-├── App.js                     # Entry point, handles login state
+├── app/
+│   ├── (tabs)/
+│   │   ├── _layout.tsx
+│   │   ├── attendance.js
+│   │   ├── index.tsx
+│   │   ├── profile.js
+│   │   └── students/
+│   │       ├── [id]/
+│   │       │   └── attendance-history.js
+│   │       ├── index.js
+│   │       └── add.js
+│   ├── _layout.tsx
+│   ├── login.js
+│   └── student-view/
+│       └── [id].tsx
+├── components/
+│   ├── Avatar.js
+│   ├── Card.js
+│   ├── PrimaryButton.js
+│   ├── RoundedInput.js
+│   ├── ScreenHeader.js
+│   ├── WavyBackground.js
+│   └── ui/
 ├── config/
-│   └── firebaseConfig.js      # Firebase credentials
-├── navigation/
-│   └── AppNavigator.js        # Tab + stack navigation
-└── screens/
-    ├── LoginScreen.js
-    ├── DashboardScreen.js
-    ├── StudentListScreen.js
-    ├── AddStudentScreen.js
-    ├── AttendanceScreen.js
-    └── FeeScreen.js
+│   └── firebaseConfig.js
+├── constants/
+│   └── theme.ts
+├── utils/
+│   └── attendanceHelpers.js
+├── app.json
+├── expo-env.d.ts
+├── eslint.config.js
+├── package.json
+├── tsconfig.json
+├── README.md
+└── assets/
+    └── images/
 ```
 
-## Features (MVP)
-- [x] Admin login/signup (Firebase Auth)
-- [x] Add / edit / delete students
-- [x] Mark daily attendance (present/absent) per student
-- [x] Track fee status (paid/pending) per student
-- [x] One-tap WhatsApp reminder to parent for pending fees
-- [x] Live dashboard summary (total students, pending fees)
+## Main app flow
+### Tabs
+The bottom navigation is limited to 4 items:
+- Home
+- Calendar
+- Students
+- Profile
 
-## Roadmap (Phase 2)
-- [ ] Replace manual WhatsApp deep link with Twilio WhatsApp Business API for fully automated, scheduled reminders
-- [ ] Monthly fee history (currently tracks only current status, not per-month log)
-- [ ] Attendance calendar view + monthly attendance % report
-- [ ] Parent-facing view (read-only) via a shared link
-- [ ] Push notifications for the owner (e.g. "5 fees still pending this week")
+### Internal screens
+These are normal routed screens, not bottom-tab entries:
+- Fee status screen
+- Add / edit student screen
+- Attendance history screen
+- Public student view screen
 
-## Important note on Firestore security
-This starter uses Firestore in **test mode**, which allows open read/write —
-fine for development, **not safe for production**. Before deploying for a real
-user, add security rules so only authenticated users can read/write their own
-center's data.
+These screens are opened from dashboard buttons or list actions, not from the tab bar.
 
-## Why this project (for recruiters/interviewers)
-This isn't a tutorial clone — it targets a real, underserved niche (small
-tuition centers, most of which still run on WhatsApp groups + Excel) and
-integrates a real third-party communication channel (WhatsApp) rather than
-just CRUD screens. It demonstrates: Firebase real-time data (`onSnapshot`),
-multi-screen navigation architecture, auth state handling, and basic product
-thinking about a genuine small-business pain point.
+## Firebase setup
+Create a Firebase project and add the following environment variables at the root of the project in a `.env` file:
+
+```bash
+EXPO_PUBLIC_FIREBASE_API_KEY=your_api_key
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
+EXPO_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+EXPO_PUBLIC_FIREBASE_APP_ID=your_app_id
+```
+
+Then enable:
+- Firebase Authentication → Email/Password
+- Firestore Database
+
+## Install and run
+```bash
+npm install
+npx expo start -c
+```
+
+Run the app in Expo Go or a simulator/emulator.
+
+## Features implemented
+- [x] Admin signup/login
+- [x] User-specific Firebase data scoping
+- [x] Dashboard summary cards
+- [x] Student add/edit/delete flow
+- [x] Daily attendance marking
+- [x] Attendance history calendar view
+- [x] Fee tracking and status switching
+- [x] WhatsApp reminder deep links
+- [x] Teacher profile page
+- [x] Warm coffee themed UI
+
+## Notes
+- This project is designed as an MVP for a tuition center workflow.
+- App logic is intentionally focused on real management tasks rather than a generic template.
+- Firestore security rules should be tightened before production deployment.
+
+## Future improvements
+- Automatic monthly WhatsApp reports
+- Parent-facing reporting link with read-only access
+- More advanced attendance analytics
+- Better role-based access (admin vs teacher)
+- Production security rules and validation

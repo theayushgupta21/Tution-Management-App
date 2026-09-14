@@ -1,0 +1,33 @@
+import { StyleSheet, Text, View } from 'react-native';
+import theme from '../constants/theme';
+
+export default function Avatar({ name, size = 52, backgroundColor = theme.colors.primary, textColor = '#fff', style }) {
+  const initial = (name || 'T').charAt(0).toUpperCase();
+
+  return (
+    <View
+      style={[
+        styles.avatar,
+        {
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          backgroundColor,
+        },
+        style,
+      ]}
+    >
+      <Text style={[styles.text, { color: textColor, fontSize: Math.max(size * 0.35, 18) }]}>{initial}</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  avatar: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  text: {
+    fontWeight: '800',
+  },
+});

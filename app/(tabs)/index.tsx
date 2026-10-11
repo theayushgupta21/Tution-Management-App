@@ -443,27 +443,15 @@ export default function DashboardScreen() {
       >
         <Reveal go={leaving} delay={80} style={styles.topBar}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.eyebrow}>
-              {profile.subject || "All Subjects"}
-            </Text>
             <Text style={styles.topTitle} numberOfLines={1}>
               Hello, {displayName} 👋
+            </Text>
+            <Text style={styles.eyebrow}>
+              {profile.subject || "All Subjects"}
             </Text>
           </View>
 
           <View style={styles.topActions}>
-            <TouchableOpacity
-              onPress={handleLogout}
-              style={styles.logoutBtn}
-              activeOpacity={0.8}
-            >
-              <Ionicons
-                name="log-out-outline"
-                size={20}
-                color={theme.colors.danger}
-              />
-            </TouchableOpacity>
-
             <TouchableOpacity
               onPress={() => router.push("/profile")}
               activeOpacity={0.85}
@@ -668,19 +656,10 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     color: theme.colors.textPrimary,
     letterSpacing: -0.4,
-    marginTop: 2,
+    marginTop: 1,
   },
   topActions: { flexDirection: "row", alignItems: "center", gap: 10 },
-  logoutBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 14,
-    backgroundColor: theme.colors.dangerSoft,
-    borderWidth: 1,
-    borderColor: "#F7DCD2",
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  
   avatarRing: {
     padding: 3,
     borderRadius: 30,
@@ -694,7 +673,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.card,
     borderRadius: 30,
     padding: 18,
-    marginBottom: 24,
+    marginBottom: 19,
     borderWidth: 1,
     borderColor: theme.colors.border,
     ...theme.shadows.card,

@@ -241,10 +241,7 @@ export default function StudentListScreen() {
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
           <View>
-            <ScreenHeader
-              title="Students"
-              subtitle={`${counts.all} enrolled learners`}
-            />
+            <ScreenHeader title="Students" />
 
             {/* Search */}
             <View style={styles.search}>
@@ -409,7 +406,7 @@ export default function StudentListScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background },
   // neeche jagah: floating tab bar + FAB ke liye
-  list: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 190 },
+  list: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 190 },
 
   /* Search + filters */
   search: {
@@ -417,7 +414,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 10,
     height: 50,
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     borderRadius: 16,
     backgroundColor: theme.colors.card,
     borderWidth: 1,

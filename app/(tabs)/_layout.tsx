@@ -211,7 +211,7 @@ export default function TabsLayout() {
 }
 
 const styles = StyleSheet.create({
-  wrapper: { position: "absolute", left: 18, right: 18 },
+  wrapper: { position: "absolute", left: 20, right: 20 },
   glass: {
     height: BAR_HEIGHT,
     borderRadius: 34,
@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.55)",
     backgroundColor:
-      Platform.OS === "android" ? "rgba(255,248,237,0.55)" : "transparent",
+      Platform.OS === "android" ? "rgb(255, 255, 255)" : "transparent",
   },
   tint: {
     ...StyleSheet.absoluteFill,

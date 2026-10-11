@@ -287,13 +287,7 @@ export default function AttendanceScreen() {
                     status === "present" && { color: theme.colors.success },
                     status === "absent" && { color: theme.colors.danger },
                   ]}
-                >
-                  {status === "present"
-                    ? "Present"
-                    : status === "absent"
-                      ? "Absent"
-                      : "Not marked"}
-                </Text>
+                ></Text>
               </View>
 
               <View style={styles.buttonRow}>
@@ -409,10 +403,10 @@ const styles = StyleSheet.create({
 
   /* Student row */
   row: {
-    borderRadius: 22,
+    borderRadius: 25,
     padding: 14,
     marginBottom: 12,
-    borderWidth: 1.5,
+    borderWidth: 2.5,
   },
   rowTop: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
   name: {

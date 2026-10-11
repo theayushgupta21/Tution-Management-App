@@ -2,25 +2,42 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Crypto from "expo-crypto";
 import { useRouter } from "expo-router";
 import { doc, onSnapshot, updateDoc } from "firebase/firestore";
-import { useEffect, useState } from "react";
-import { Alert, FlatList, Linking, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Linking,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Avatar from "../../../components/Avatar";
 import Card from "../../../components/Card";
 import ScreenHeader from "../../../components/ScreenHeader";
-import { auth, db, getUserStudentsCollection } from "../../../config/firebaseConfig";
+import {
+  auth,
+  db,
+  getUserStudentsCollection,
+} from "../../../config/firebaseConfig";
 import theme from "../../../constants/theme";
 import { getMonthlyAttendanceSummary } from "../../../utils/attendanceHelpers";
 
+/* ================= Logic (pehle jaisa hi) ================= */
 const generateShareToken = async () => {
   if (typeof Crypto?.randomUUID === "function") {
     return Crypto.randomUUID();
   }
-
   return `token_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
 };
 
 const getParentShareBaseUrl = () => {
-  const stored = process.env.EXPO_PUBLIC_PARENT_VIEW_BASE_URL || "https://your-firebase-hosting-domain";
+  const stored =
+    process.env.EXPO_PUBLIC_PARENT_VIEW_BASE_URL ||
+    "https://your-firebase-hosting-domain";
   return stored.replace(/\/$/, "");
 };
 
@@ -30,7 +47,13 @@ const ensureStudentShareToken = async (student) => {
   }
 
   const nextToken = await generateShareToken();
-  const studentDoc = doc(db, "users", auth?.currentUser?.uid, "students", student.id);
+  const studentDoc = doc(
+    db,
+    "users",
+    auth?.currentUser?.uid,
+    "students",
+    student.id,
+  );
 
   try {
     await updateDoc(studentDoc, {
@@ -44,16 +67,54 @@ const ensureStudentShareToken = async (student) => {
   }
 };
 
+const FILTERS = [
+  { key: "all", label: "All" },
+  { key: "pending", label: "Pending" },
+  { key: "paid", label: "Paid" },
+];
+
+/* ---------- Chhota action button (icon + label, 44px) ---------- */
+function ActionButton({ icon, label, onPress, loading, tone = "soft" }) {
+  const isWhatsapp = tone === "whatsapp";
+  const fg = isWhatsapp ? "#fff" : theme.colors.primary;
+
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={loading}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      style={({ pressed }) => [
+        styles.actionBtn,
+        isWhatsapp ? styles.actionWhatsapp : styles.actionSoft,
+        pressed && { opacity: 0.85, transform: [{ scale: 0.97 }] },
+      ]}
+    >
+      {loading ? (
+        <ActivityIndicator size="small" color={fg} />
+      ) : (
+        <Ionicons name={icon} size={17} color={fg} />
+      )}
+      <Text style={[styles.actionLabel, { color: fg }]}>{label}</Text>
+    </Pressable>
+  );
+}
+
 export default function StudentListScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [students, setStudents] = useState([]);
   const [loadingStudentId, setLoadingStudentId] = useState(null);
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState("all");
 
   useEffect(() => {
     if (!db) return;
 
     const unsub = onSnapshot(getUserStudentsCollection(), (snapshot) => {
-      setStudents(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
+      const list = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+      list.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+      setStudents(list);
     });
 
     return () => unsub();
@@ -61,7 +122,10 @@ export default function StudentListScreen() {
 
   const sendMonthlyReport = async (student) => {
     if (!db) {
-      Alert.alert("Firebase not ready", "Please add your Firebase config values first.");
+      Alert.alert(
+        "Firebase not ready",
+        "Please add your Firebase config values first.",
+      );
       return;
     }
 
@@ -69,10 +133,17 @@ export default function StudentListScreen() {
 
     try {
       const now = new Date();
-      const summary = await getMonthlyAttendanceSummary(student.id, now.getFullYear(), now.getMonth());
+      const summary = await getMonthlyAttendanceSummary(
+        student.id,
+        now.getFullYear(),
+        now.getMonth(),
+      );
 
       if (summary.empty) {
-        Alert.alert("No attendance records yet", "No attendance records available for this month yet.");
+        Alert.alert(
+          "No attendance records yet",
+          "No attendance records available for this month yet.",
+        );
         return;
       }
 
@@ -82,14 +153,20 @@ export default function StudentListScreen() {
       const phone = (student.parentPhone || "").replace(/[^\d]/g, "");
 
       if (!phone) {
-        Alert.alert("Missing number", "Add parent phone number for this student first.");
+        Alert.alert(
+          "Missing number",
+          "Add parent phone number for this student first.",
+        );
         return;
       }
 
       const url = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(message)}`;
       await Linking.openURL(url);
     } catch (error) {
-      Alert.alert("Report error", error.message || "Could not generate monthly report.");
+      Alert.alert(
+        "Report error",
+        error.message || "Could not generate monthly report.",
+      );
     } finally {
       setLoadingStudentId(null);
     }
@@ -98,7 +175,10 @@ export default function StudentListScreen() {
   const shareParentLink = async (student) => {
     const phone = (student.parentPhone || "").replace(/[^\d]/g, "");
     if (!phone) {
-      Alert.alert("Missing number", "Add parent phone number for this student first.");
+      Alert.alert(
+        "Missing number",
+        "Add parent phone number for this student first.",
+      );
       return;
     }
 
@@ -109,111 +189,350 @@ export default function StudentListScreen() {
       const url = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(message)}`;
       await Linking.openURL(url);
     } catch (error) {
-      Alert.alert("Share error", error.message || "Could not open WhatsApp share flow.");
+      Alert.alert(
+        "Share error",
+        error.message || "Could not open WhatsApp share flow.",
+      );
     }
   };
 
+  const openEdit = (item) =>
+    router.push({
+      pathname: "/students/add",
+      params: {
+        id: item.id,
+        name: item.name,
+        className: item.className,
+        parentPhone: item.parentPhone,
+        feeAmount: String(item.feeAmount),
+        feeStatus: item.feeStatus,
+      },
+    });
+
+  /* ================= UI helpers ================= */
+  const counts = useMemo(() => {
+    const paid = students.filter((s) => s.feeStatus === "paid").length;
+    return { all: students.length, paid, pending: students.length - paid };
+  }, [students]);
+
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return students.filter((s) => {
+      const isPaid = s.feeStatus === "paid";
+      if (filter === "paid" && !isPaid) return false;
+      if (filter === "pending" && isPaid) return false;
+      if (!q) return true;
+      return (
+        (s.name || "").toLowerCase().includes(q) ||
+        (s.className || "").toLowerCase().includes(q)
+      );
+    });
+  }, [students, query, filter]);
+
+  const fabBottom = Math.max(insets.bottom, 12) + 68 + 16; // floating tab bar ke upar
+
   return (
     <View style={styles.container}>
-      <ScreenHeader title="Students" subtitle="All enrolled learners" />
-
       <FlatList
-        data={students}
+        data={visible}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
-        ListEmptyComponent={<Text style={styles.empty}>No students yet. Tap the add button to start.</Text>}
-        renderItem={({ item }) => (
-          <Card style={styles.studentCard}>
-            <TouchableOpacity
-              style={styles.cardInfo}
-              onPress={() =>
-                router.push({
-                  pathname: "/students/add",
-                  params: {
-                    id: item.id,
-                    name: item.name,
-                    className: item.className,
-                    parentPhone: item.parentPhone,
-                    feeAmount: String(item.feeAmount),
-                    feeStatus: item.feeStatus,
-                  },
-                })
-              }
-            >
-              <View style={styles.row}>
-                <Avatar name={item.name} size={42} />
-                <View style={styles.studentMeta}>
-                  <Text style={styles.studentName}>{item.name}</Text>
-                  <Text style={styles.studentDetail}>{item.className || "Class"} · ₹{item.feeAmount}</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        ListHeaderComponent={
+          <View>
+            <ScreenHeader
+              title="Students"
+              subtitle={`${counts.all} enrolled learners`}
+            />
 
-            <View style={styles.actionColumn}>
-              <TouchableOpacity
-                style={styles.reportButton}
-                onPress={() =>
-                  router.push({
-                    pathname: "/students/[id]/attendance-history",
-                    params: { id: item.id, name: item.name },
-                  })
-                }
-              >
-                <Text style={styles.actionText}>History</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.reportButton} onPress={() => sendMonthlyReport(item)}>
-                <Text style={styles.actionText}>{loadingStudentId === item.id ? "Loading..." : "Report"}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.shareButton} onPress={() => shareParentLink(item)}>
-                <Text style={styles.actionText}>Share</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={[styles.badge, { backgroundColor: item.feeStatus === "paid" ? theme.colors.successSoft : theme.colors.dangerSoft }]}>
+            {/* Search */}
+            <View style={styles.search}>
               <Ionicons
-                name={item.feeStatus === "paid" ? "checkmark-circle" : "time"}
-                size={12}
-                color={item.feeStatus === "paid" ? theme.colors.success : theme.colors.danger}
+                name="search"
+                size={18}
+                color={theme.colors.textSecondary}
               />
-              <Text style={{ color: item.feeStatus === "paid" ? theme.colors.success : theme.colors.danger, fontWeight: "700", fontSize: 12 }}>
-                {item.feeStatus === "paid" ? "Paid" : "Pending"}
-              </Text>
+              <TextInput
+                value={query}
+                onChangeText={setQuery}
+                placeholder="Search by name or class"
+                placeholderTextColor={theme.colors.textSecondary}
+                style={styles.searchInput}
+                returnKeyType="search"
+                autoCorrect={false}
+              />
+              {query.length > 0 && (
+                <Pressable onPress={() => setQuery("")} hitSlop={10}>
+                  <Ionicons
+                    name="close-circle"
+                    size={18}
+                    color={theme.colors.textSecondary}
+                  />
+                </Pressable>
+              )}
             </View>
-          </Card>
-        )}
+
+            {/* Filter chips */}
+            <View style={styles.chipRow}>
+              {FILTERS.map((f) => {
+                const active = filter === f.key;
+                return (
+                  <Pressable
+                    key={f.key}
+                    onPress={() => setFilter(f.key)}
+                    style={[styles.chip, active && styles.chipActive]}
+                    accessibilityState={{ selected: active }}
+                  >
+                    <Text
+                      style={[styles.chipText, active && styles.chipTextActive]}
+                    >
+                      {f.label} · {counts[f.key]}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        }
+        ListEmptyComponent={
+          <View style={styles.emptyWrap}>
+            <View style={styles.emptyIcon}>
+              <Ionicons
+                name={
+                  students.length === 0 ? "people-outline" : "search-outline"
+                }
+                size={30}
+                color={theme.colors.primary}
+              />
+            </View>
+            <Text style={styles.emptyTitle}>
+              {students.length === 0 ? "No students yet" : "No matches found"}
+            </Text>
+            <Text style={styles.empty}>
+              {students.length === 0
+                ? "Tap the + button to add your first student."
+                : "Try a different name or change the filter."}
+            </Text>
+          </View>
+        }
+        renderItem={({ item }) => {
+          const paid = item.feeStatus === "paid";
+          const badgeFg = paid ? theme.colors.success : theme.colors.danger;
+          const badgeBg = paid
+            ? theme.colors.successSoft
+            : theme.colors.dangerSoft;
+
+          return (
+            <Card style={styles.studentCard}>
+              {/* Upar ka hissa: tap karne par edit */}
+              <Pressable
+                onPress={() => openEdit(item)}
+                style={({ pressed }) => [
+                  styles.cardTop,
+                  pressed && { opacity: 0.8 },
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel={`Edit ${item.name}`}
+              >
+                <Avatar name={item.name} size={46} />
+                <View style={styles.studentMeta}>
+                  <Text style={styles.studentName} numberOfLines={1}>
+                    {item.name}
+                  </Text>
+                  <Text style={styles.studentDetail} numberOfLines={1}>
+                    {item.className || "Class"} · ₹{item.feeAmount}
+                  </Text>
+                </View>
+
+                <View style={[styles.badge, { backgroundColor: badgeBg }]}>
+                  <Ionicons
+                    name={paid ? "checkmark-circle" : "time"}
+                    size={13}
+                    color={badgeFg}
+                  />
+                  <Text style={[styles.badgeText, { color: badgeFg }]}>
+                    {paid ? "Paid" : "Pending"}
+                  </Text>
+                </View>
+              </Pressable>
+
+              <View style={styles.divider} />
+
+              {/* Neeche: 3 barabar ke action buttons */}
+              <View style={styles.actionRow}>
+                <ActionButton
+                  icon="calendar"
+                  label="History"
+                  onPress={() =>
+                    router.push({
+                      pathname: "/students/[id]/attendance-history",
+                      params: { id: item.id, name: item.name },
+                    })
+                  }
+                />
+                <ActionButton
+                  icon="document-text"
+                  label="Report"
+                  loading={loadingStudentId === item.id}
+                  onPress={() => sendMonthlyReport(item)}
+                />
+                <ActionButton
+                  icon="logo-whatsapp"
+                  label="Share"
+                  tone="whatsapp"
+                  onPress={() => shareParentLink(item)}
+                />
+              </View>
+            </Card>
+          );
+        }}
       />
 
-      <TouchableOpacity style={styles.fab} onPress={() => router.push("/students/add")}>
-        <Ionicons name="add" size={28} color="#fff" />
-      </TouchableOpacity>
+      <Pressable
+        onPress={() => router.push("/students/add")}
+        accessibilityRole="button"
+        accessibilityLabel="Add student"
+        style={({ pressed }) => [
+          styles.fab,
+          { bottom: fabBottom },
+          pressed && { transform: [{ scale: 0.95 }] },
+        ]}
+      >
+        <Ionicons name="add" size={26} color="#fff" />
+        <Text style={styles.fabText}>Add</Text>
+      </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.colors.neutral, padding: 20 },
-  list: { paddingBottom: 90 },
-  studentCard: { padding: 14, marginBottom: 12, borderRadius: 18 },
-  row: { flexDirection: "row", alignItems: "center", flex: 1 },
-  studentMeta: { marginLeft: 12, flex: 1 },
-  studentName: { fontSize: 17, fontWeight: "700", color: theme.colors.textPrimary },
-  studentDetail: { fontSize: 13, color: theme.colors.textSecondary, marginTop: 3 },
-  actionColumn: { marginRight: 8, gap: 6 },
-  reportButton: { backgroundColor: theme.colors.primarySoft, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 7 },
-  shareButton: { backgroundColor: "#25D366", borderRadius: 10, paddingHorizontal: 10, paddingVertical: 7 },
-  actionText: { color: theme.colors.textPrimary, fontSize: 11, fontWeight: "700" },
-  badge: { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20, marginLeft: 8 },
-  empty: { textAlign: "center", color: theme.colors.textSecondary, marginTop: 40 },
-  fab: {
-    position: "absolute",
-    right: 24,
-    bottom: 28,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+  container: { flex: 1, backgroundColor: theme.colors.background },
+  // neeche jagah: floating tab bar + FAB ke liye
+  list: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 190 },
+
+  /* Search + filters */
+  search: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    height: 50,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    backgroundColor: theme.colors.card,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    marginBottom: 12,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: "600",
+    color: theme.colors.textPrimary,
+    paddingVertical: 0,
+  },
+  chipRow: { flexDirection: "row", gap: 8, marginBottom: 16 },
+  chip: {
+    paddingHorizontal: 14,
+    height: 36,
+    justifyContent: "center",
+    borderRadius: 18,
+    backgroundColor: theme.colors.card,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  chipActive: {
     backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+  chipText: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: theme.colors.textSecondary,
+  },
+  chipTextActive: { color: "#fff" },
+
+  /* Card */
+  studentCard: { padding: 14, marginBottom: 12, borderRadius: 22 },
+  cardTop: { flexDirection: "row", alignItems: "center" },
+  studentMeta: { flex: 1, marginLeft: 12, marginRight: 8 },
+  studentName: {
+    fontSize: 17,
+    fontWeight: "800",
+    color: theme.colors.textPrimary,
+  },
+  studentDetail: {
+    fontSize: 13,
+    color: theme.colors.textSecondary,
+    marginTop: 3,
+    fontWeight: "600",
+  },
+  badge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  badgeText: { fontWeight: "800", fontSize: 12 },
+  divider: {
+    height: 1,
+    backgroundColor: theme.colors.border,
+    opacity: 0.6,
+    marginVertical: 12,
+  },
+
+  /* Actions */
+  actionRow: { flexDirection: "row", gap: 8 },
+  actionBtn: {
+    flex: 1,
+    height: 44,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    borderRadius: 14,
+  },
+  actionSoft: { backgroundColor: theme.colors.primarySoft },
+  actionWhatsapp: { backgroundColor: "#25D366" },
+  actionLabel: { fontSize: 13, fontWeight: "800" },
+
+  /* Empty */
+  emptyWrap: { alignItems: "center", marginTop: 30, paddingHorizontal: 24 },
+  emptyIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 22,
+    backgroundColor: theme.colors.primarySoft,
     justifyContent: "center",
     alignItems: "center",
+    marginBottom: 14,
+  },
+  emptyTitle: {
+    fontSize: 17,
+    fontWeight: "800",
+    color: theme.colors.textPrimary,
+  },
+  empty: {
+    textAlign: "center",
+    color: theme.colors.textSecondary,
+    marginTop: 6,
+    lineHeight: 20,
+  },
+
+  /* FAB */
+  fab: {
+    position: "absolute",
+    right: 20,
+    height: 52,
+    paddingHorizontal: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    borderRadius: 26,
+    backgroundColor: theme.colors.primary,
     ...theme.shadows.soft,
   },
+  fabText: { color: "#fff", fontSize: 15, fontWeight: "800" },
 });

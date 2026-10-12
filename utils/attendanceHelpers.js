@@ -1,11 +1,16 @@
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../config/firebaseConfig";
 
-export const getMonthKey = (year, monthIndex) => `${year}-${String(monthIndex + 1).padStart(2, "0")}`;
+// Returns YYYY-MM format
+export const getMonthKey = (year, monthIndex) => {
+  return `${year}-${String(monthIndex + 1).padStart(2, "0")}`;
+};
 
+// Creates calendar cells for the selected month
 export const getMonthGrid = (year, monthIndex) => {
   const firstDay = new Date(year, monthIndex, 1).getDay();
   const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+
   const cells = [];
 
   for (let i = 0; i < firstDay; i += 1) {
@@ -20,69 +25,129 @@ export const getMonthGrid = (year, monthIndex) => {
     cells.push(null);
   }
 
-  return { cells, daysInMonth, firstDay };
+  return {
+    cells,
+    daysInMonth,
+    firstDay,
+  };
 };
 
+// Returns YYYY-MM-DD
 export const formatDateKey = (date) => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
+
   return `${year}-${month}-${day}`;
 };
 
-export const getMonthlyAttendanceSummary = async (studentId, year, monthIndex) => {
+// Safely fetch one attendance document
+const getAttendanceRecord = async (dateKey, studentId, userId) => {
+  const documentPaths = [];
+
+  // First check the signed-in user's attendance
+  if (userId) {
+    documentPaths.push([
+      "users",
+      userId,
+      "attendance",
+      dateKey,
+      "records",
+      studentId,
+    ]);
+  }
+
+  // Fallback to the legacy/global attendance structure
+  documentPaths.push(["attendance", dateKey, "records", studentId]);
+
+  for (const path of documentPaths) {
+    try {
+      const attendanceRef = doc(db, ...path);
+      const snapshot = await getDoc(attendanceRef);
+
+      if (snapshot.exists()) {
+        return snapshot.data();
+      }
+    } catch (error) {
+      console.warn(
+        `Unable to read attendance for ${dateKey}:`,
+        error?.message || error,
+      );
+    }
+  }
+
+  return null;
+};
+
+// Returns attendance summary for a selected month
+export const getMonthlyAttendanceSummary = async (
+  studentId,
+  year,
+  monthIndex,
+) => {
+  const emptySummary = {
+    presentCount: 0,
+    absentCount: 0,
+    totalMarked: 0,
+    totalDays: 0,
+    percentage: 0,
+    records: {},
+    empty: true,
+  };
+
   if (!studentId || !db) {
-    return {
-      presentCount: 0,
-      totalMarked: 0,
-      totalDays: 0,
-      percentage: 0,
-      records: {},
-      empty: true,
-    };
+    return emptySummary;
   }
 
   const { daysInMonth } = getMonthGrid(year, monthIndex);
   const monthKey = getMonthKey(year, monthIndex);
-  const records = {};
   const userId = auth?.currentUser?.uid;
 
-  // Firestore mein attendance har din ke liye alag subcollection hoti hai:
-  // users/{uid}/attendance/{date}/records/{studentId}
-  // Isliye loop se har date ke document ko fetch karna simple aur efficient hai.
-  // Yeh collectionGroup query se zyada explicit hai aur user-scoped structure ke saath sahi kaam karta hai.
+  const records = {};
+
   let presentCount = 0;
+  let absentCount = 0;
   let totalMarked = 0;
 
   for (let day = 1; day <= daysInMonth; day += 1) {
     const dateKey = `${monthKey}-${String(day).padStart(2, "0")}`;
-    const primaryRef = userId
-      ? doc(db, "users", userId, "attendance", dateKey, "records", studentId)
-      : doc(db, "attendance", dateKey, "records", studentId);
 
-    const fallbackRef = doc(db, "attendance", dateKey, "records", studentId);
+    const value = await getAttendanceRecord(dateKey, studentId, userId);
 
-    try {
-      const snap = (await getDoc(primaryRef).catch(() => null)) || (await getDoc(fallbackRef).catch(() => null));
+    if (!value) {
+      continue;
+    }
 
-      if (snap && snap.exists()) {
-        const value = snap.data();
-        const status = value.status || "not-marked";
-        records[dateKey] = { ...value, status };
-        totalMarked += 1;
-        if (status === "present") {
-          presentCount += 1;
-        }
-      }
-    } catch (error) {
-      console.warn("Could not access attendance for:", dateKey, error);
+    // Normalize status to lowercase for consistent comparisons
+    const rawStatus = String(value.status || "")
+      .trim()
+      .toLowerCase();
+
+    // Ignore documents without a recognized attendance status
+    if (rawStatus !== "present" && rawStatus !== "absent") {
+      continue;
+    }
+
+    records[dateKey] = {
+      ...value,
+      status: rawStatus,
+    };
+
+    totalMarked += 1;
+
+    if (rawStatus === "present") {
+      presentCount += 1;
+    } else {
+      absentCount += 1;
     }
   }
 
-  const percentage = totalMarked === 0 ? 0 : Math.round((presentCount / totalMarked) * 100);
+  const percentage =
+    totalMarked === 0 ? 0 : Math.round((presentCount / totalMarked) * 100);
 
   return {
     presentCount,
+    absentCount,
     totalMarked,
     totalDays: daysInMonth,
     percentage,
@@ -91,5 +156,10 @@ export const getMonthlyAttendanceSummary = async (studentId, year, monthIndex) =
   };
 };
 
-export const getMonthLabel = (year, monthIndex) =>
-  new Date(year, monthIndex, 1).toLocaleString("default", { month: "long", year: "numeric" });
+// Returns month name and year
+export const getMonthLabel = (year, monthIndex) => {
+  return new Date(year, monthIndex, 1).toLocaleString("en-IN", {
+    month: "long",
+    year: "numeric",
+  });
+};

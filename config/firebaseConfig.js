@@ -4,7 +4,7 @@ import {
   getAuth,
   getReactNativePersistence,
   initializeAuth,
-} from "firebase/auth/react-native";
+} from "firebase/auth";
 import { collection, getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -23,32 +23,58 @@ export const isFirebaseConfigured = Boolean(
   firebaseConfig.appId,
 );
 
-let app;
+let app = null;
 let auth = null;
 let db = null;
 
-try {
-  if (isFirebaseConfigured) {
-    app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-
-    try {
-      auth = initializeAuth(app, {
-        persistence: getReactNativePersistence(ReactNativeAsyncStorage),
-      });
-    } catch (authError) {
-      auth = getAuth(app);
+/**
+ * Auth ek hi baar banta hai. Fast Refresh / reload par initializeAuth dobara
+ * chalne se "auth/already-initialized" aata hai, to us case mein purana
+ * instance (getAuth) wapas de dete hain.
+ */
+const createAuth = (firebaseApp) => {
+  try {
+    return initializeAuth(firebaseApp, {
+      persistence: getReactNativePersistence(ReactNativeAsyncStorage),
+    });
+  } catch (error) {
+    if (error?.code === "auth/already-initialized") {
+      return getAuth(firebaseApp);
     }
-
-    db = getFirestore(app);
+    throw error;
   }
-} catch (error) {
+};
+
+if (!isFirebaseConfigured) {
+  // Kaun si key missing hai, ye saaf dikhe
+  const missing = Object.entries({
+    EXPO_PUBLIC_FIREBASE_API_KEY: firebaseConfig.apiKey,
+    EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN: firebaseConfig.authDomain,
+    EXPO_PUBLIC_FIREBASE_PROJECT_ID: firebaseConfig.projectId,
+    EXPO_PUBLIC_FIREBASE_APP_ID: firebaseConfig.appId,
+  })
+    .filter(([, value]) => !value)
+    .map(([key]) => key);
+
   console.warn(
-    "Firebase initialization failed. Check your Firebase API key and project settings.",
-    error,
+    "Firebase config missing: " +
+      missing.join(", ") +
+      ". .env file check karein aur `npx expo start -c` se restart karein.",
   );
-  auth = null;
-  db = null;
+} else {
+  try {
+    app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+    auth = createAuth(app);
+    db = getFirestore(app);
+  } catch (error) {
+    console.error("FIREBASE INIT ERROR:", error);
+    app = null;
+    auth = null;
+    db = null;
+  }
 }
+
+export { app, auth, db };
 
 export const getUserStudentsCollection = () => {
   if (!db) {

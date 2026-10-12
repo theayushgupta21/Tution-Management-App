@@ -22,7 +22,7 @@ const TABS: { name: string; title: string; icon: IconName }[] = [
   { name: "index", title: "Home", icon: "home" },
   { name: "attendance", title: "Attendance", icon: "calendar" },
   { name: "students/index", title: "Students", icon: "people" },
-  { name: "profile", title: "Profile", icon: "person" },
+  { name: "fees", title: "fees", icon: "person" },
 ];
 
 const BAR_HEIGHT = 68;
@@ -200,7 +200,12 @@ export default function TabsLayout() {
       ))}
 
       {/* Tab bar se hidden, router.push() se khulenge */}
-      <Tabs.Screen name="fees" options={{ href: null }} />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+        }}
+      />
       <Tabs.Screen name="students/add" options={{ href: null }} />
       <Tabs.Screen
         name="students/[id]/attendance-history"

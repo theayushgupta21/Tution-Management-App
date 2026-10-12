@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import { useRouter } from "expo-router";
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -133,6 +134,7 @@ function Summary({ present, absent, unmarked, total, onAllPresent }) {
 }
 
 export default function AttendanceScreen() {
+  const router = useRouter();
   const [students, setStudents] = useState([]);
   const [attendance, setAttendance] = useState({});
   const todayKey = getTodayKey();
@@ -289,7 +291,6 @@ export default function AttendanceScreen() {
                   ]}
                 ></Text>
               </View>
-
               <View style={styles.buttonRow}>
                 <StatusButton
                   label="Present"
@@ -306,6 +307,40 @@ export default function AttendanceScreen() {
                   onPress={() => markAttendance(item.id, "absent")}
                 />
               </View>
+              {/* Attendance History Button */}
+              <Pressable
+                onPress={() =>
+                  router.push({
+                    pathname: "/students/[id]/attendance-history",
+                    params: {
+                      id: item.id,
+                      name: item.name || "Student",
+                    },
+                  })
+                }
+                accessibilityRole="button"
+                accessibilityLabel={`View attendance history for ${item.name || "student"}`}
+                style={({ pressed }) => [
+                  styles.historyButton,
+                  pressed && { opacity: 0.75 },
+                ]}
+              >
+                <Ionicons
+                  name="calendar-outline"
+                  size={18}
+                  color={theme.colors.primary}
+                />
+
+                <Text style={styles.historyButtonText}>
+                  View Attendance History
+                </Text>
+
+                <Ionicons
+                  name="chevron-forward"
+                  size={18}
+                  color={theme.colors.primary}
+                />
+              </Pressable>
             </Card>
           );
         }}
@@ -458,5 +493,26 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
     marginTop: 6,
     lineHeight: 20,
+  },
+  historyButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    minHeight: 44,
+    marginTop: 12,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.primarySoft,
+  },
+
+  historyButtonText: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: "800",
+    color: theme.colors.primary,
+    textAlign: "center",
   },
 });

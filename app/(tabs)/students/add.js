@@ -2,8 +2,20 @@ import * as Crypto from "expo-crypto";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { addDoc, deleteDoc, doc, getDoc, updateDoc } from "firebase/firestore";
 import { useState } from "react";
-import { Alert, Linking, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity } from "react-native";
-import { auth, db, getUserStudentsCollection } from "../../../config/firebaseConfig";
+import {
+  Alert,
+  Linking,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+} from "react-native";
+import {
+  auth,
+  db,
+  getUserStudentsCollection,
+} from "../../../config/firebaseConfig";
 import { getMonthlyAttendanceSummary } from "../../../utils/attendanceHelpers";
 
 const generateShareToken = async () => {
@@ -16,7 +28,9 @@ const generateShareToken = async () => {
 
 const getStudentDocRef = async (studentId) => {
   const userId = auth?.currentUser?.uid;
-  const userScopedRef = userId ? doc(db, "users", userId, "students", studentId) : null;
+  const userScopedRef = userId
+    ? doc(db, "users", userId, "students", studentId)
+    : null;
   const legacyRef = doc(db, "students", studentId);
 
   if (userScopedRef) {
@@ -47,12 +61,17 @@ export default function AddStudentScreen() {
 
   const handleSave = async () => {
     if (!name || !parentPhone || !feeAmount) {
-      Alert.alert("Missing info", "Please fill name, parent phone, and fee amount");
+      Alert.alert(
+        "Missing info",
+        "Please fill name, parent phone, and fee amount",
+      );
       return;
     }
 
     const userId = auth?.currentUser?.uid;
-    const nextShareToken = isEditing ? String(params.shareToken || "") || await generateShareToken() : await generateShareToken();
+    const nextShareToken = isEditing
+      ? String(params.shareToken || "") || (await generateShareToken())
+      : await generateShareToken();
     const studentData = {
       name,
       className,
@@ -70,7 +89,10 @@ export default function AddStudentScreen() {
         await updateDoc(studentDocRef, studentData);
       } else {
         if (!userId) {
-          Alert.alert("Login required", "Please log in before adding a student.");
+          Alert.alert(
+            "Login required",
+            "Please log in before adding a student.",
+          );
           return;
         }
 
@@ -99,7 +121,10 @@ export default function AddStudentScreen() {
 
   const handleViewAttendance = () => {
     if (!params.id) {
-      Alert.alert("Save first", "Please save the student before viewing attendance history.");
+      Alert.alert(
+        "Save first",
+        "Please save the student before viewing attendance history.",
+      );
       return;
     }
 
@@ -111,7 +136,10 @@ export default function AddStudentScreen() {
 
   const handleSendMonthlyReport = async () => {
     if (!params.id) {
-      Alert.alert("Save first", "Please save the student before sending a monthly report.");
+      Alert.alert(
+        "Save first",
+        "Please save the student before sending a monthly report.",
+      );
       return;
     }
 
@@ -127,10 +155,17 @@ export default function AddStudentScreen() {
       };
 
       const now = new Date();
-      const summary = await getMonthlyAttendanceSummary(student.id, now.getFullYear(), now.getMonth());
+      const summary = await getMonthlyAttendanceSummary(
+        student.id,
+        now.getFullYear(),
+        now.getMonth(),
+      );
 
       if (summary.empty) {
-        Alert.alert("No attendance records", "No attendance records yet this month.");
+        Alert.alert(
+          "No attendance records",
+          "No attendance records yet this month.",
+        );
         return;
       }
 
@@ -140,14 +175,20 @@ export default function AddStudentScreen() {
       const phone = (student.parentPhone || "").replace(/[^\d]/g, "");
 
       if (!phone) {
-        Alert.alert("Missing number", "Add parent phone number for this student first.");
+        Alert.alert(
+          "Missing number",
+          "Add parent phone number for this student first.",
+        );
         return;
       }
 
       const url = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(message)}`;
       await Linking.openURL(url);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Could not generate monthly report.";
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Could not generate monthly report.";
       Alert.alert("Report error", message);
     } finally {
       setSendingReport(false);
@@ -156,13 +197,25 @@ export default function AddStudentScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>{isEditing ? "Edit Student" : "Add Student"}</Text>
+      <Text style={styles.title}>
+        {isEditing ? "Edit Student" : "Add Student"}
+      </Text>
 
       <Text style={styles.label}>Student Name</Text>
-      <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="e.g. Riya Sharma" />
+      <TextInput
+        style={styles.input}
+        value={name}
+        onChangeText={setName}
+        placeholder="e.g. Riya Sharma"
+      />
 
       <Text style={styles.label}>Class / Batch</Text>
-      <TextInput style={styles.input} value={className} onChangeText={setClassName} placeholder="e.g. Class 10 - Math" />
+      <TextInput
+        style={styles.input}
+        value={className}
+        onChangeText={setClassName}
+        placeholder="e.g. Class 10 - Math"
+      />
 
       <Text style={styles.label}>Parent's WhatsApp Number</Text>
       <TextInput
@@ -174,20 +227,39 @@ export default function AddStudentScreen() {
       />
 
       <Text style={styles.label}>Monthly Fee (₹)</Text>
-      <TextInput style={styles.input} value={feeAmount} onChangeText={setFeeAmount} placeholder="e.g. 1500" keyboardType="numeric" />
+      <TextInput
+        style={styles.input}
+        value={feeAmount}
+        onChangeText={setFeeAmount}
+        placeholder="e.g. 1500"
+        keyboardType="numeric"
+      />
 
       <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-        <Text style={styles.saveButtonText}>{isEditing ? "Update" : "Save Student"}</Text>
+        <Text style={styles.saveButtonText}>
+          {isEditing ? "Update" : "Save Student"}
+        </Text>
       </TouchableOpacity>
 
       {isEditing && (
         <>
-          <TouchableOpacity style={styles.secondaryButton} onPress={handleViewAttendance}>
-            <Text style={styles.secondaryButtonText}>View Attendance History</Text>
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={handleViewAttendance}
+          >
+            <Text style={styles.secondaryButtonText}>
+              View Attendance History
+            </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.secondaryButton} onPress={handleSendMonthlyReport} disabled={sendingReport}>
-            <Text style={styles.secondaryButtonText}>{sendingReport ? "Sending report..." : "Send Monthly Report"}</Text>
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={handleSendMonthlyReport}
+            disabled={sendingReport}
+          >
+            <Text style={styles.secondaryButtonText}>
+              {sendingReport ? "Sending report..." : "Send Monthly Report"}
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
@@ -201,13 +273,43 @@ export default function AddStudentScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FFF8ED", padding: 20 },
-  title: { fontSize: 24, fontWeight: "bold", marginVertical: 16, color: "#3E2723" },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginVertical: 16,
+    color: "#3E2723",
+  },
   label: { fontSize: 13, color: "#8D6E63", marginBottom: 6, marginTop: 12 },
-  input: { borderWidth: 1, borderColor: "#EADCCB", borderRadius: 10, padding: 14, fontSize: 16, color: "#3E2723", backgroundColor: "#FFFFFF" },
-  saveButton: { backgroundColor: "#8B5E3C", padding: 16, borderRadius: 10, alignItems: "center", marginTop: 28 },
+  input: {
+    borderWidth: 1,
+    borderColor: "#EADCCB",
+    borderRadius: 10,
+    padding: 14,
+    fontSize: 16,
+    color: "#3E2723",
+    backgroundColor: "#FFFFFF",
+  },
+  saveButton: {
+    backgroundColor: "#8B5E3C",
+    padding: 16,
+    borderRadius: 10,
+    alignItems: "center",
+    marginTop: 28,
+  },
   saveButtonText: { color: "#FFFFFF", fontSize: 16, fontWeight: "600" },
-  secondaryButton: { backgroundColor: "#F4E3D2", padding: 14, borderRadius: 10, alignItems: "center", marginTop: 12 },
+  secondaryButton: {
+    backgroundColor: "#F4E3D2",
+    padding: 14,
+    borderRadius: 10,
+    alignItems: "center",
+    marginTop: 12,
+  },
   secondaryButtonText: { color: "#3E2723", fontWeight: "600" },
-  deleteButton: { padding: 16, alignItems: "center", marginTop: 10, marginBottom: 30 },
+  deleteButton: {
+    padding: 16,
+    alignItems: "center",
+    marginTop: 10,
+    marginBottom: 30,
+  },
   deleteButtonText: { color: "#C1440E", fontWeight: "600" },
 });

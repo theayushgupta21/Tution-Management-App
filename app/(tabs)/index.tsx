@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { getAuth, signOut } from "firebase/auth";
+import { signOut } from "firebase/auth/react-native";
 import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import { ReactNode, useEffect, useRef, useState } from "react";
 import {
@@ -33,7 +33,7 @@ const firebaseAuth: any = firebaseModule.auth;
 const firestoreDb: any = firebaseModule.db;
 const getUserStudentsCollection: any = firebaseModule.getUserStudentsCollection;
 
-const authInstance: any = firebaseAuth ?? getAuth();
+const authInstance: any = firebaseAuth;
 
 /* ================= Motion system =================
    Ek hi language poore screen par:
@@ -358,19 +358,29 @@ export default function DashboardScreen() {
 
   useEffect(() => {
     const studentCollection = getUserStudentsCollection();
+
     if (!studentCollection) {
       setTotalStudents(0);
       setPendingFees(0);
       return;
     }
 
-    const unsub = onSnapshot(studentCollection, (snapshot: any) => {
-      setTotalStudents(snapshot.size);
-      const pending = snapshot.docs.filter(
-        (d: any) => d.data().feeStatus === "pending",
-      ).length;
-      setPendingFees(pending);
-    });
+    const unsub = onSnapshot(
+      studentCollection,
+      (snapshot: any) => {
+        setTotalStudents(snapshot.size);
+
+        const pending = snapshot.docs.filter(
+          (d: any) => d.data().feeStatus === "pending",
+        ).length;
+
+        setPendingFees(pending);
+      },
+      (error) => {
+        console.warn("Students subscription failed:", error);
+      },
+    );
+
     return () => unsub();
   }, []);
 
@@ -659,7 +669,7 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   topActions: { flexDirection: "row", alignItems: "center", gap: 10 },
-  
+
   avatarRing: {
     padding: 3,
     borderRadius: 30,

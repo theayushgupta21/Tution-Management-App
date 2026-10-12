@@ -2,7 +2,11 @@ import { useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { db } from "../../../../config/firebaseConfig";
-import { getMonthGrid, getMonthLabel, getMonthlyAttendanceSummary } from "../../../../utils/attendanceHelpers";
+import {
+  getMonthGrid,
+  getMonthLabel,
+  getMonthlyAttendanceSummary,
+} from "../../../../utils/attendanceHelpers";
 
 const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -11,7 +15,14 @@ export default function AttendanceHistoryScreen() {
   const studentId = String(params.id || "");
   const studentName = String(params.name || "Student");
   const [monthOffset, setMonthOffset] = useState(0);
-  const [summary, setSummary] = useState({ presentCount: 0, totalMarked: 0, totalDays: 0, percentage: 0, records: {}, empty: true });
+  const [summary, setSummary] = useState({
+    presentCount: 0,
+    totalMarked: 0,
+    totalDays: 0,
+    percentage: 0,
+    records: {},
+    empty: true,
+  });
   const [loading, setLoading] = useState(true);
 
   const currentDate = useMemo(() => {
@@ -31,7 +42,11 @@ export default function AttendanceHistoryScreen() {
       }
 
       setLoading(true);
-      const monthlySummary = await getMonthlyAttendanceSummary(studentId, year, monthIndex);
+      const monthlySummary = await getMonthlyAttendanceSummary(
+        studentId,
+        year,
+        monthIndex,
+      );
       setSummary(monthlySummary);
       setLoading(false);
     };
@@ -45,8 +60,10 @@ export default function AttendanceHistoryScreen() {
 
   const totalPresent = summary.presentCount;
   const totalMarked = summary.totalMarked;
-  const daysInMonth = summary.totalDays || new Date(year, monthIndex + 1, 0).getDate();
-  const monthPercent = totalMarked === 0 ? 0 : Math.round((totalPresent / totalMarked) * 100);
+  const daysInMonth =
+    summary.totalDays || new Date(year, monthIndex + 1, 0).getDate();
+  const monthPercent =
+    totalMarked === 0 ? 0 : Math.round((totalPresent / totalMarked) * 100);
 
   return (
     <View style={styles.container}>
@@ -54,11 +71,17 @@ export default function AttendanceHistoryScreen() {
       <Text style={styles.studentName}>{studentName}</Text>
 
       <View style={styles.headerRow}>
-        <TouchableOpacity style={styles.navButton} onPress={() => setMonthOffset((prev) => prev - 1)}>
+        <TouchableOpacity
+          style={styles.navButton}
+          onPress={() => setMonthOffset((prev) => prev - 1)}
+        >
           <Text style={styles.navText}>←</Text>
         </TouchableOpacity>
         <Text style={styles.monthText}>{getMonthLabel(year, monthIndex)}</Text>
-        <TouchableOpacity style={styles.navButton} onPress={() => setMonthOffset((prev) => prev + 1)}>
+        <TouchableOpacity
+          style={styles.navButton}
+          onPress={() => setMonthOffset((prev) => prev + 1)}
+        >
           <Text style={styles.navText}>→</Text>
         </TouchableOpacity>
       </View>
@@ -68,17 +91,22 @@ export default function AttendanceHistoryScreen() {
       ) : (
         <>
           <Text style={styles.summaryText}>
-            This month: {totalPresent}/{daysInMonth} days present ({monthPercent}%)
+            This month: {totalPresent}/{daysInMonth} days present (
+            {monthPercent}%)
           </Text>
 
           <View style={styles.calendarWrap}>
             {WEEK_DAYS.map((day) => (
-              <Text key={day} style={styles.weekdayHeader}>{day}</Text>
+              <Text key={day} style={styles.weekdayHeader}>
+                {day}
+              </Text>
             ))}
 
             {cells.map((day, index) => {
               if (day === null) {
-                return <View key={`empty-${index}`} style={styles.dayCellEmpty} />;
+                return (
+                  <View key={`empty-${index}`} style={styles.dayCellEmpty} />
+                );
               }
 
               const dayKey = `${year}-${String(monthIndex + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
@@ -89,7 +117,12 @@ export default function AttendanceHistoryScreen() {
               let cellStyle = styles.dayCellNeutral;
               if (status === "present") cellStyle = styles.dayCellPresent;
               if (status === "absent") cellStyle = styles.dayCellAbsent;
-              if (isToday) cellStyle = { ...cellStyle, borderColor: "#8B5E3C", borderWidth: 2 };
+              if (isToday)
+                cellStyle = {
+                  ...cellStyle,
+                  borderColor: "#8B5E3C",
+                  borderWidth: 2,
+                };
 
               return (
                 <View key={dayKey} style={cellStyle}>
@@ -108,8 +141,20 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff", padding: 20 },
   title: { fontSize: 24, fontWeight: "bold", marginTop: 10 },
   studentName: { fontSize: 15, color: "#666", marginBottom: 18 },
-  headerRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 18 },
-  navButton: { backgroundColor: "#F4E3D2", width: 40, height: 40, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 18,
+  },
+  navButton: {
+    backgroundColor: "#F4E3D2",
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   navText: { fontSize: 22, color: "#8B5E3C", fontWeight: "700" },
   monthText: { fontSize: 18, fontWeight: "700", color: "#3E2723" },
   summaryText: { fontSize: 14, color: "#3E2723", marginBottom: 18 },

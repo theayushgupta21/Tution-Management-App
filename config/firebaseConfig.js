@@ -1,7 +1,11 @@
-import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
-import { getApp, getApps, initializeApp } from 'firebase/app';
-import { getAuth, getReactNativePersistence, initializeAuth } from 'firebase/auth';
-import { collection, getFirestore } from 'firebase/firestore';
+import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage";
+import { getApp, getApps, initializeApp } from "firebase/app";
+import {
+  getAuth,
+  getReactNativePersistence,
+  initializeAuth,
+} from "firebase/auth/react-native";
+import { collection, getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -14,9 +18,9 @@ const firebaseConfig = {
 
 export const isFirebaseConfigured = Boolean(
   firebaseConfig.apiKey &&
-    firebaseConfig.authDomain &&
-    firebaseConfig.projectId &&
-    firebaseConfig.appId
+  firebaseConfig.authDomain &&
+  firebaseConfig.projectId &&
+  firebaseConfig.appId,
 );
 
 let app;
@@ -39,28 +43,42 @@ try {
   }
 } catch (error) {
   console.warn(
-    'Firebase initialization failed. Check your Firebase API key and project settings.',
-    error
+    "Firebase initialization failed. Check your Firebase API key and project settings.",
+    error,
   );
   auth = null;
   db = null;
 }
 
 export const getUserStudentsCollection = () => {
-  if (!auth?.currentUser?.uid || !db) {
-    return collection(db, 'students');
+  if (!db) {
+    console.warn("Firebase Firestore is not configured.");
+    return null;
   }
 
-  return collection(db, 'users', auth.currentUser.uid, 'students');
+  if (auth?.currentUser?.uid) {
+    return collection(db, "users", auth.currentUser.uid, "students");
+  }
+
+  return collection(db, "students");
 };
 
 export const getUserAttendanceCollection = (dateKey) => {
-  if (!auth?.currentUser?.uid || !db) {
-    return collection(db, 'attendance', dateKey, 'records');
+  if (!db) {
+    console.warn("Firebase Firestore is not configured.");
+    return null;
   }
 
-  return collection(db, 'users', auth.currentUser.uid, 'attendance', dateKey, 'records');
+  if (auth?.currentUser?.uid) {
+    return collection(
+      db,
+      "users",
+      auth.currentUser.uid,
+      "attendance",
+      dateKey,
+      "records",
+    );
+  }
+
+  return collection(db, "attendance", dateKey, "records");
 };
-
-export { auth, db };
-

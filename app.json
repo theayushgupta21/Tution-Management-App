@@ -1,18 +1,18 @@
 {
   "expo": {
-    "name": "TuitionApp",
-    "slug": "TuitionApp",
+    "name": "TutorMitra",
+    "slug": "tutormitra",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "tuitionapp",
+    "scheme": "tutormitra",
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#FFF8ED",
+        "backgroundColor": "#F8F4E8",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -32,9 +32,9 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#FFF8ED",
+          "backgroundColor": "#F8F4E8",
           "dark": {
-            "backgroundColor": "#3E2723"
+            "backgroundColor": "#172554"
           }
         }
       ],
